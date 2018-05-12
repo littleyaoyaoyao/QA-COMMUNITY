@@ -13,6 +13,8 @@ import org.springframework.context.annotation.ComponentScan;
 public class DemoApplication {
 
 	public static void main(String[] args) {
+		//禁用spring-boot-devtool
+		//System.setProperty("spring.devtools.restart.enabled", "false");  
 		SpringApplication.run(DemoApplication.class, args);
 	}
 }

@@ -21,9 +21,12 @@ import com.practise.model.HostHolder;
 import com.practise.model.Question;
 import com.practise.model.ViewObject;
 import com.practise.service.CommentService;
+import com.practise.service.LikeService;
 import com.practise.service.QuestionService;
 import com.practise.service.UserService;
 import com.practise.util.DemoUtil;
+import com.practise.util.JedisAdapter;
+import com.practise.util.RedisKeyUtil;
 
 
 
@@ -43,6 +46,12 @@ public class QuestionController {
 	@Autowired
 	CommentService commentService;
 	
+	@Autowired
+	LikeService likeService;
+	
+	@Autowired
+	JedisAdapter jedisAdapter;
+	
 	//查看问题详细内容
 	//关于问题的评论也在这部分中实现
 	@RequestMapping(path={"/question/{qid}"},method={RequestMethod.GET})
@@ -56,6 +65,28 @@ public class QuestionController {
 		for(Comment comment : commentList){
 			ViewObject vo = new ViewObject();
 			vo.set("comment", comment);
+			
+			//若用户没有登录，like置为0，前端处理like=0时的按键样式
+			if(hostHold.getUser() == null){
+				vo.set("liked", 0);
+			}else{
+				vo.set("liked", likeService.getLikeStatus(hostHold.getUser().getId(), EntityType.ENTITY_COMMENT, comment.getId()));
+			}
+			
+			vo.set("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
+			
+			System.out.println(RedisKeyUtil.getLikeKey(EntityType.ENTITY_COMMENT,comment.getId()));
+			System.out.println("当前user id: " + hostHold.getUser().getId());
+			//对应getlikestatus
+			System.out.println("是否在结合中："+jedisAdapter.sismember(RedisKeyUtil.getLikeKey(EntityType.ENTITY_COMMENT,comment.getId()), String.valueOf(hostHold.getUser().getId())));
+			//个数对应getlikecount
+			System.out.println("个数："+jedisAdapter.scard(RedisKeyUtil.getLikeKey(EntityType.ENTITY_COMMENT,comment.getId())));
+			System.out.println("comment id: "+comment.getId());
+			
+			//这部分有
+			System.out.println(likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
+			System.out.println(likeService.getLikeStatus(hostHold.getUser().getId(), EntityType.ENTITY_COMMENT, comment.getId()));
+			
 			vo.set("user", userService.getUser(comment.getUserId()));
 			vos.add(vo);
 		}

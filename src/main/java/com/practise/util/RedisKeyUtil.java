@@ -12,13 +12,19 @@ public class RedisKeyUtil {
 	private static String SPLIT = ":";
 	private static String LIKE_IT = "LIKE";
 	private static String DISLIKE_IT = "DISLIKE";
+	private static String EVENTQUEUE = "EVENT_QUEUE";
 	
-	public static String getLikeKey(int entityId, int entityType){
+	public static String getLikeKey(int entityType, int entityId){
+		//LIKE:1:12  为问题12喜欢
 		return LIKE_IT + SPLIT + String.valueOf(entityType) + SPLIT + String.valueOf(entityId);
 	}
 	
-	public static String getDislikeKey(int entityId, int entityType){
+	public static String getDislikeKey(int entityType, int entityId){
 		return DISLIKE_IT + SPLIT + String.valueOf(entityType) + SPLIT + String.valueOf(entityId);
+	}
+	
+	public static String getEventQueue(){
+		return EVENTQUEUE;
 	}
 	
 }
