@@ -74,7 +74,8 @@ public class QuestionController {
 			}
 			
 			vo.set("likeCount", likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
-			
+			/*
+			//这部分的作用是为了调试like功能
 			System.out.println(RedisKeyUtil.getLikeKey(EntityType.ENTITY_COMMENT,comment.getId()));
 			System.out.println("当前user id: " + hostHold.getUser().getId());
 			//对应getlikestatus
@@ -86,7 +87,7 @@ public class QuestionController {
 			//这部分有
 			System.out.println(likeService.getLikeCount(EntityType.ENTITY_COMMENT, comment.getId()));
 			System.out.println(likeService.getLikeStatus(hostHold.getUser().getId(), EntityType.ENTITY_COMMENT, comment.getId()));
-			
+			*/
 			vo.set("user", userService.getUser(comment.getUserId()));
 			vos.add(vo);
 		}
