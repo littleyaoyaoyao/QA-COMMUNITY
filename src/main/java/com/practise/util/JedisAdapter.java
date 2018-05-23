@@ -1,6 +1,8 @@
 package com.practise.util;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.Transaction;
 
 @Service
 public class JedisAdapter implements InitializingBean{
@@ -20,6 +23,12 @@ public class JedisAdapter implements InitializingBean{
 	public void afterPropertiesSet() throws Exception {
 		pool = new JedisPool("redis://127.0.0.1:6379/8");
 	}
+	
+	public Jedis getJedis(){
+		return pool.getResource();
+	}
+	
+	
 	
 	//set
 	public long sadd(String key, String val){
@@ -137,6 +146,156 @@ public class JedisAdapter implements InitializingBean{
 		return null;
 	}
 	
+	public long zadd(String key, double socre, String value){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zadd(key, socre, value);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return 0;
+	}
+	
+	public long zrem(String key, double socre, String value){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zrem(key, value);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return 0;
+	}
+	
+	/**
+	 * ZRANGE salary 0 -1 WITHSCORES # 显示整个有序集成员
+	 * @param key
+	 * @param start
+	 * @param end
+	 * @return
+	 */
+	public Set<String> zrange(String key, long start, long end){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zrange(key, start, end);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return null;
+	}
+	
+	public Set<String> zrevrange(String key, long start, long end){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zrevrange(key, start, end);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return null;
+	}
+	
+	
+	/**
+	 * 返回有序集key的基数
+	 * @param key
+	 * @param socre
+	 * @param value
+	 * @return
+	 */
+	public long zcard(String key){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zcard(key);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return 0;
+	}
+	
+	/**
+	 * 返回有序集key中，成员value的分数score
+	 * @param key
+	 * @param value
+	 * @return
+	 */
+	public double zsocre(String key, String value){
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+			return jedis.zscore(key, value);
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}finally {
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return 0;
+	}
+	
+	
+	//**************************************************************************
+	//**************************************************************************
+	//**************************************************************************
+	//事务管理
+	public Transaction multi(Jedis jedis){
+		try {
+			return jedis.multi();
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+		}
+		return null;
+	}
+	
+	public List<Object> exec(Transaction tx, Jedis jedis){
+		try {
+			return tx.exec();
+		} catch (Exception e) {
+			logger.error("出现异常" + e.getMessage());
+			tx.discard();
+		}finally{
+			if(tx != null){
+				try {
+					tx.close();
+				} catch (IOException e) {
+					logger.error("出现异常" + e.getMessage());
+				}
+			}
+			
+			if(jedis != null){
+				jedis.close();
+			}
+		}
+		return null;
+	}
+	
+	//**************************************************************************
+	//**************************************************************************
+	//**************************************************************************
 	
 	
 	public static void main(String[] args){
